@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | Snooker Elite</title>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: #f5d477;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            background: #080808;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            max-width: 950px;
+            margin: 35px auto;
+            padding: 20px;
+        }
+        .booking {
+            background: #222;
+            border: 1px solid #b38b35;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .booking p { color: white; }
+        button {
+            background: #d6ae4c;
+            padding: 10px 18px;
+            border: 0;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        a { color: #f5d477; margin: 10px; }
+        .message { color: #f5d477; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>♛ SNOOKER ELITE</h1>
+    <a href="/">Home</a>
+    <a href="/book-table/">Book a Table</a>
+    <a href="/game/">Play Game</a>
+    <a href="/logout/">Logout</a>
+</header>
+
+<main>
+    <h2>MY BOOKINGS</h2>
+    <p>Welcome, {{ request.user.username }}!</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="message">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    {% for booking in bookings %}
+        <div class="booking">
+            <h3>{{ booking.table.name }}</h3>
+            <p>Date: {{ booking.booking_date }}</p>
+            <p>Start time: {{ booking.start_time }}</p>
+            <p>Duration: {{ booking.duration_hours }} hour(s)</p>
+            <p>Status: {{ booking.status }}</p>
+
+            {% if booking.status == "Confirmed" %}
+                <form method="POST"
+                      action="{% url 'cancel_booking' booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit">CANCEL BOOKING</button>
+                </form>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>You have no bookings yet.</p>
+        <a href="/book-table/">BOOK YOUR TABLE NOW</a>
+    {% endfor %}
+</main>
+
+</body>
+</html>

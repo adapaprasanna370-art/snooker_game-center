@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Player Login | Snooker Elite</title>
+    <style>
+        body {
+            background: #111;
+            color: #f5d477;
+            font-family: Arial;
+            text-align: center;
+            padding-top: 60px;
+        }
+        .login-box {
+            background: #222;
+            width: 350px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+        }
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 12px 0;
+        }
+        button {
+            background: #d6ae4c;
+            padding: 12px 35px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        a { color: #f5d477; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>♛ SNOOKER ELITE</h1>
+        <h2>WELCOME BACK</h2>
+        <h3>PLAYER LOGIN</h3>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="username"
+                   placeholder="Enter Username" required>
+
+            <input type="password" name="password"
+                   placeholder="Enter Password" required>
+
+            <br>
+            <button type="submit">LOGIN</button>
+        </form>
+
+        <p>Don't have an account?</p>
+        <a href="/register/">REGISTER</a>
+        <p><a href="/">Back to Home</a></p>
+    </div>
+</body>
+</html>

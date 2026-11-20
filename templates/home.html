@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snooker Elite Gaming Center</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101510;color:#f4d477;font-family:Arial}
+header{background:#080808;padding:20px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+header h2{margin:0}
+nav{display:flex;gap:18px;flex-wrap:wrap}
+nav a{color:#f4d477;text-decoration:none}
+.hero{text-align:center;padding:85px 20px;background:linear-gradient(135deg,#071d12,#153d25,#080808)}
+.hero h1{font-size:48px}
+.hero p{color:white;font-size:18px}
+.btn{display:inline-block;background:#d6ae4c;color:#111;padding:14px 25px;text-decoration:none;font-weight:bold;border-radius:5px;margin:10px}
+section{padding:35px 5%;text-align:center}
+.tables{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px}
+.card{background:#202820;padding:25px;border:1px solid #a98539;border-radius:10px}
+.card p{color:white}
+footer{text-align:center;background:#080808;padding:25px;color:#aaa}
+@media(max-width:600px){.hero h1{font-size:32px}header{gap:15px}}
+</style>
+</head>
+<body>
+
+<header>
+<h2>♛ SNOOKER ELITE</h2>
+<nav>
+<a href="/">Home</a>
+<a href="/game/">Play Game</a>
+<a href="/book-table/">Book Table</a>
+<a href="/my-bookings/">My Bookings</a>
+<a href="/leaderboard/">Leaderboard</a>
+<a href="/login/">Login</a>
+<a href="/register/">Register</a>
+</nav>
+</header>
+
+<div class="hero">
+<p>WELCOME TO SNOOKER ELITE</p>
+<h1>MASTER THE ART OF SNOOKER</h1>
+<p>Play. Compete. Book your favourite table.</p>
+<a class="btn" href="/game/">PLAY NOW</a>
+<a class="btn" href="/book-table/">BOOK A TABLE</a>
+</div>
+
+<section>
+<h2>OUR SNOOKER TABLES</h2>
+<div class="tables">
+{% for table in tables %}
+<div class="card">
+<h3>🎱 {{ table.name }}</h3>
+<p style="color:#f5d477;font-weight:bold;">
+    FREE TABLE BOOKING
+</p>
+<p>{% if table.is_active %}Available for booking{% else %}Unavailable{% endif %}</p>
+<a class="btn" href="/book-table/">BOOK FREE NOW</a>
+</div>
+{% empty %}
+<p>No tables are available yet.</p>
+{% endfor %}
+</div>
+</section>
+
+<section>
+<h2>YOUR GAMING CENTER</h2>
+<div class="tables">
+<div class="card">
+<h3>🎱 Play Snooker</h3>
+<p>Play with two players and track your scores.</p>
+<a class="btn" href="/game/">PLAY GAME</a>
+</div>
+<div class="card">
+<h3>📅 Book a Table</h3>
+<p>Choose your table, date and time.</p>
+<a class="btn" href="/book-table/">BOOK NOW</a>
+</div>
+<div class="card">
+<h3>📋 My Bookings</h3>
+<p>View and manage your reservations.</p>
+<a class="btn" href="/my-bookings/">MY BOOKINGS</a>
+</div>
+</div>
+</section>
+
+<footer>
+<p>© 2026 Snooker Elite Gaming Center</p>
+</footer>
+
+</body>
+</html>

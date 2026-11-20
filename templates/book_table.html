@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a Table | Snooker Elite</title>
+<style>
+body{margin:0;background:#111;color:#f5d477;font-family:Arial}
+header{background:#080808;padding:20px;text-align:center}
+nav a{color:#f5d477;margin:12px;text-decoration:none}
+main{max-width:500px;margin:35px auto;background:#222;padding:30px;border-radius:12px}
+label{display:block;margin-top:15px}
+input,select{width:100%;padding:13px;margin-top:8px;box-sizing:border-box}
+button{background:#d6ae4c;border:0;padding:14px 22px;margin-top:20px;font-weight:bold;cursor:pointer}
+.message{color:white;background:#333;padding:10px}
+</style>
+</head>
+<body>
+<header>
+<h1>♛ SNOOKER ELITE</h1>
+<nav>
+<a href="/">Home</a>
+<a href="/game/">Play Game</a>
+<a href="/my-bookings/">My Bookings</a>
+<a href="/logout/">Logout</a>
+</nav>
+</header>
+
+<main>
+<h2>BOOK YOUR TABLE</h2>
+<p>Welcome, {{ request.user.username }}!</p>
+
+{% if messages %}
+{% for message in messages %}
+<p class="message">{{ message }}</p>
+{% endfor %}
+{% endif %}
+
+{% if tables %}
+<form method="POST">
+{% csrf_token %}
+
+<label>Select Snooker Table</label>
+<select name="table" required>
+{% for table in tables %}
+<option value="{{ table.id }}">
+{{ table.name }} - ₹{{ table.hourly_rate }} per hour
+</option>
+{% endfor %}
+</select>
+
+<label>Booking Date</label>
+<input type="date" name="booking_date" required>
+
+<label>Start Time</label>
+<input type="time" name="start_time" required>
+
+<label>Duration</label>
+<select name="duration_hours" required>
+<option value="1">1 hour</option>
+<option value="2">2 hours</option>
+<option value="3">3 hours</option>
+</select>
+
+<button type="submit">CONFIRM BOOKING</button>
+</form>
+{% else %}
+<p>No tables have been added yet. Please contact the administrator.</p>
+<a href="/admin/">Open Admin</a>
+{% endif %}
+
+</main>
+</body>
+</html>

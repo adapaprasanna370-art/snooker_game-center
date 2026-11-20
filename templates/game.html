@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snooker Elite - Two Player Game</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101510;color:#f5d477;font-family:Arial;text-align:center}
+header{padding:15px;background:#080b08}
+h1{margin:5px}
+.game-info{display:flex;justify-content:center;gap:35px;flex-wrap:wrap;padding:12px}
+.player{background:#252b25;padding:12px 22px;border-radius:10px}
+.active{border:2px solid #f5d477}
+#table-wrap{width:min(96vw,1050px);margin:10px auto}
+canvas{width:100%;height:auto;background:#07552d;border:14px solid #633817;border-radius:12px;display:block;touch-action:none}
+.controls{padding:15px}
+button{background:#d6ae4c;border:0;padding:12px 22px;font-weight:bold;cursor:pointer;margin:6px}
+input{accent-color:#d6ae4c}
+#message{color:white;min-height:25px}
+a{color:#f5d477}
+</style>
+</head>
+<body>
+<header>
+<h1>♛ SNOOKER ELITE</h1>
+<p>Two Player Snooker Championship</p>
+</header>
+
+<div class="game-info">
+<div class="player active" id="p1">PLAYER 1: <span id="s1">0</span></div>
+<div class="player" id="p2">PLAYER 2: <span id="s2">0</span></div>
+<div class="player">TURN: <span id="turn">PLAYER 1</span></div>
+</div>
+
+<div id="table-wrap">
+<canvas id="table" width="1000" height="550"></canvas>
+</div>
+
+<div class="controls">
+<p>Aim by moving your pointer around the white ball. Drag backwards and release to shoot.</p>
+<label>Shot power: <input id="power" type="range" min="5" max="25" value="14"></label>
+<button onclick="resetGame()">NEW GAME</button>
+<p id="message">Player 1 starts. Aim and shoot!</p>
+<p><a href="/">Back to Home</a></p>
+</div>
+
+<script>
+const canvas=document.getElementById("table");
+const ctx=canvas.getContext("2d");
+const W=1000,H=550;
+const pockets=[
+{x:25,y:25},{x:500,y:20},{x:975,y:25},
+{x:25,y:525},{x:500,y:530},{x:975,y:525}
+];
+let balls=[],player=1,scores=[0,0],aim={x:1,y:0};
+let dragging=false,mouse={x:0,y:0},moving=false,shotTaken=false;
+let message="Player 1 starts. Aim and shoot!";
+let shotTimer=0;
+
+function makeBall(x,y,color,r=11,value=1){
+return {x,y,vx:0,vy:0,color,r,value,alive:true};
+}
+function resetGame(){
+balls=[];
+balls.push(makeBall(250,275,"#ffffff",11,0));
+let colors=["#e51b23","#e51b23","#e51b23","#e51b23","#e51b23",
+"#e51b23","#e51b23","#e51b23","#e51b23","#e51b23",
+"#e51b23","#e51b23","#e51b23","#e51b23","#e51b23"];
+for(let i=0;i<15;i++){
+let row=Math.floor(i/5),col=i%5;
+balls.push(makeBall(650+row*24,215+col*30-row*15,colors[i],11,1));
+}
+balls.push(makeBall(450,275,"#f5df22",11,2));
+balls.push(makeBall(500,275,"#1689e8",11,3));
+balls.push(makeBall(550,275,"#ed8b18",11,4));
+balls.push(makeBall(600,275,"#8b35b7",11,5));
+balls.push(makeBall(700,275,"#171717",11,7));
+player=1;scores=[0,0];moving=false;shotTaken=false;
+message="Player 1 starts. Aim and shoot!";
+updateInfo();
+}
+function updateInfo(){
+document.getElementById("s1").textContent=scores[0];
+document.getElementById("s2").textContent=scores[1];
+document.getElementById("turn").textContent="PLAYER "+player;
+document.getElementById("p1").classList.toggle("active",player===1);
+document.getElementById("p2").classList.toggle("active",player===2);
+document.getElementById("message").textContent=message;
+}
+function drawTable(){
+ctx.clearRect(0,0,W,H);
+ctx.fillStyle="#08713b";ctx.fillRect(0,0,W,H);
+ctx.strokeStyle="#d9b66b";ctx.lineWidth=3;
+ctx.strokeRect(45,45,910,460);
+ctx.beginPath();ctx.moveTo(300,45);ctx.lineTo(300,505);ctx.stroke();
+ctx.beginPath();ctx.arc(300,275,90,Math.PI*1.5,Math.PI*.5);ctx.stroke();
+ctx.fillStyle="#d9b66b";ctx.beginPath();ctx.arc(300,275,3,0,Math.PI*2);ctx.fill();
+for(const p of pockets){
+ctx.beginPath();ctx.fillStyle="#080808";ctx.arc(p.x,p.y,24,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.strokeStyle="#a47b43";ctx.lineWidth=4;ctx.arc(p.x,p.y,24,0,Math.PI*2);ctx.stroke();
+}
+}
+function drawBalls(){
+for(const b of balls){
+if(!b.alive)continue;
+ctx.beginPath();ctx.fillStyle=b.color;ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.fillStyle="rgba(255,255,255,.4)";
+ctx.arc(b.x-3,b.y-4,3,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=1;ctx.stroke();
+}
+}
+function cueBall(){return balls.find(b=>b.alive&&b.value===0)}
+function drawCue(){
+if(moving)return;
+let cue=cueBall();if(!cue)return;
+let dx=mouse.x-cue.x,dy=mouse.y-cue.y;
+let len=Math.hypot(dx,dy);
+if(len<2){dx=1;dy=0;len=1}
+dx/=len;dy/=len;
+aim={x:dx,y:dy};
+ctx.save();
+ctx.strokeStyle="#e6c28a";ctx.lineWidth=7;ctx.lineCap="round";
+ctx.beginPath();
+ctx.moveTo(cue.x-dx*35,cue.y-dy*35);
+ctx.lineTo(cue.x-dx*175,cue.y-dy*175);
+ctx.stroke();
+ctx.strokeStyle="#75451f";ctx.lineWidth=3;
+ctx.beginPath();ctx.moveTo(cue.x-dx*175,cue.y-dy*175);
+ctx.lineTo(cue.x-dx*205,cue.y-dy*205);ctx.stroke();
+ctx.restore();
+}
+function draw(){
+drawTable();drawBalls();drawCue();
+}
+function physics(){
+let any=false;
+for(const b of balls){
+if(!b.alive)continue;
+b.x+=b.vx;b.y+=b.vy;
+b.vx*=.988;b.vy*=.988;
+if(Math.abs(b.vx)+Math.abs(b.vy)>.06)any=true;
+else{b.vx=0;b.vy=0}
+if(b.x-b.r<45){b.x=45+b.r;b.vx=Math.abs(b.vx)*.85}
+if(b.x+b.r>955){b.x=955-b.r;b.vx=-Math.abs(b.vx)*.85}
+if(b.y-b.r<45){b.y=45+b.r;b.vy=Math.abs(b.vy)*.85}
+if(b.y+b.r>505){b.y=505-b.r;b.vy=-Math.abs(b.vy)*.85}
+}
+for(let i=0;i<balls.length;i++){
+let a=balls[i];if(!a.alive)continue;
+for(let j=i+1;j<balls.length;j++){
+let b=balls[j];if(!b.alive)continue;
+let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),min=a.r+b.r;
+if(d>0&&d<min){
+let nx=dx/d,ny=dy/d,overlap=min-d;
+a.x-=nx*overlap/2;a.y-=ny*overlap/2;
+b.x+=nx*overlap/2;b.y+=ny*overlap/2;
+let rel=(a.vx-b.vx)*nx+(a.vy-b.vy)*ny;
+if(rel>0){
+a.vx-=rel*nx;a.vy-=rel*ny;
+b.vx+=rel*nx;b.vy+=rel*ny;
+}
+}
+}
+}
+for(const b of balls){
+if(!b.alive)continue;
+for(const p of pockets){
+if(Math.hypot(b.x-p.x,b.y-p.y)<24){
+b.alive=false;
+if(b.value>0)scores[player-1]+=b.value;
+if(b.value===0){
+message="Cue ball potted! Turn changes.";
+shotTaken=true;
+}
+else message="Ball potted! +"+b.value+" points.";
+updateInfo();
+}
+}
+}
+if(!any){
+moving=false;
+if(shotTaken){
+player=player===1?2:1;
+shotTaken=false;
+message="Player "+player+" turn. Aim and shoot!";
+updateInfo();
+}
+}
+}
+function loop(){
+if(moving)physics();
+draw();
+requestAnimationFrame(loop);
+}
+function pos(e){
+let r=canvas.getBoundingClientRect();
+return {x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};
+}
+canvas.addEventListener("pointermove",e=>{
+mouse=pos(e);
+if(dragging){
+let c=cueBall();if(!c)return;
+let dx=c.x-mouse.x,dy=c.y-mouse.y,len=Math.hypot(dx,dy);
+if(len>0)aim={x:dx/len,y:dy/len};
+}
+});
+canvas.addEventListener("pointerdown",e=>{
+if(moving)return;
+mouse=pos(e);dragging=true;
+canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener("pointerup",e=>{
+if(!dragging||moving)return;
+dragging=false;
+let c=cueBall();if(!c)return;
+let dx=c.x-mouse.x,dy=c.y-mouse.y;
+let len=Math.hypot(dx,dy);
+if(len<8){message="Drag farther backwards to shoot.";updateInfo();return}
+let power=Number(document.getElementById("power").value);
+c.vx=(dx/len)*power*Math.min(len/100,1.5);
+c.vy=(dy/len)*power*Math.min(len/100,1.5);
+moving=true;shotTaken=true;
+message="Player "+player+" has taken a shot!";
+updateInfo();
+});
+resetGame();loop();
+</script>
+</body>
+</html>
